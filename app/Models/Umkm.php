@@ -11,6 +11,11 @@ class Umkm extends Model
     use HasFactory;
     protected $guarded = ['id'];
 
+    protected $casts = [
+    'kategori' => 'array', 
+    'is_delivery' => 'boolean',
+];
+
     // Relasi ke Review
     public function reviews()
     {
@@ -50,5 +55,15 @@ class Umkm extends Model
         } catch (\Exception $e) {
             return 'Info'; // Jika format jam salah, kembalikan default
         }
+    }
+    
+    public function scopeKategori($query, $kategori)
+    {
+        return $query->where('kategori', 'like', '%' . $kategori . '%');
+    }
+
+    public function scopeDelivery($query)
+    {
+        return $query->where('is_delivery', true);
     }
 }

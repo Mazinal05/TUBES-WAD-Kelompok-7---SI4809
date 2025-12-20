@@ -20,7 +20,9 @@
         </div>
 
         <div class="mb-3">
-            <span class="badge bg-secondary">{{ $umkm->kategori }}</span>
+            <span class="badge bg-secondary">
+                {{ is_array($umkm->kategori) ? implode(', ', $umkm->kategori) : $umkm->kategori }}
+            </span>
             @if($umkm->is_delivery)
                 <span class="badge bg-primary">Bisa Delivery</span>
             @else
@@ -34,8 +36,74 @@
         </div>
         
         <p>{{ $umkm->deskripsi }}</p>
-        <div class="alert alert-info">
-            <strong>Jam Operasional:</strong> {{ $umkm->jam_operasional }}
+
+        <div class="alert alert-info mb-4 d-flex align-items-center">
+            <i class="bi bi-clock-fill me-2 fs-5"></i>
+            <div>
+                <strong>Jam Operasional:</strong><br>
+                {!! nl2br(e($umkm->jam_operasional)) !!}
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h5 class="fw-bold">Alamat & Lokasi</h5>
+            <p class="mb-2 text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ $umkm->alamat }}</p>
+            
+            @if($umkm->koordinat || $umkm->alamat)
+                @php
+                    $isUrl = filter_var($umkm->koordinat, FILTER_VALIDATE_URL);
+                    
+                    // Tentukan URL untuk tombol "Buka di Google Maps"
+                    if ($isUrl) {
+                        $mapsUrl = $umkm->koordinat;
+                    } elseif ($umkm->koordinat) {
+                        $mapsUrl = "https://www.google.com/maps/search/?api=1&query=" . urlencode($umkm->koordinat);
+                    } else {
+                        // Fallback ke alamat jika koordinat kosong
+                        $mapsUrl = "https://www.google.com/maps/search/?api=1&query=" . urlencode($umkm->alamat);
+                    }
+
+                    // Tentukan Query untuk Embed Map (Iframe)
+                    // Link pendek (seperti maps.app.goo.gl) tidak bisa di-embed langsung, jadi pakai alamat sebagai fallback visual
+                    if ($isUrl) {
+                        $embedQuery = $umkm->alamat;
+                    } elseif ($umkm->koordinat) {
+                        $embedQuery = $umkm->koordinat;
+                    } else {
+                        $embedQuery = $umkm->alamat;
+                    }
+                @endphp
+                
+                <!-- Map Preview Card -->
+                <a href="{{ $mapsUrl }}" target="_blank" class="text-decoration-none">
+                    <div class="rounded-3 overflow-hidden position-relative border" style="height: 150px; background-color: #e8eaed;">
+                        <!-- Real Map Embed as Background -->
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            scrolling="no" 
+                            marginheight="0" 
+                            marginwidth="0" 
+                            style="pointer-events: none; filter: contrast(1.1) saturate(0.8);" 
+                            src="https://maps.google.com/maps?q={{ urlencode($embedQuery) }}&t=m&z=15&output=embed">
+                        </iframe>
+                        
+                        <!-- Overlay to ensure text legibility if map is busy -->
+                        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(255,255,255,0.1);"></div>
+
+                        <!-- External Link Icon -->
+                        <div class="position-absolute top-0 end-0 m-2 bg-white text-dark rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;">
+                            <i class="bi bi-box-arrow-up-right small"></i>
+                        </div>
+                        
+                        <!-- Label Overlay -->
+                        <div class="position-absolute bottom-0 start-0 w-100 bg-white py-2 px-3 border-top">
+                            <small class="fw-bold text-dark"><i class="bi bi-map me-1"></i> Buka di Google Maps</small>
+                        </div>
+                    </div>
+                </a>
+            @endif
         </div>
 
         <hr>

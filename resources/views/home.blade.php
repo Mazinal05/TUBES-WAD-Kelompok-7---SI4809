@@ -70,7 +70,9 @@
                 </div>
 
                 <div class="mb-3">
-                    <span class="badge bg-secondary fw-normal">{{ $umkm->kategori }}</span>
+                    <span class="badge bg-secondary fw-normal">
+                        {{ is_array($umkm->kategori) ? implode(', ', $umkm->kategori) : $umkm->kategori }}
+                    </span>
                     @if($umkm->is_delivery)
                         <span class="badge bg-primary fw-normal"><i class="bi bi-truck"></i> Delivery</span>
                     @endif

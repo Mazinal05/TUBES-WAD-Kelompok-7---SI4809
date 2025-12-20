@@ -1,74 +1,69 @@
 <?php
 
-namespace App\Models;
+namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon; // <--- WAJIB ADA AGAR TIDAK ERROR "Class Carbon not found"
+use Illuminate\Http\Request;
+use App\Models\Umkm;
+use App\Models\Review; // Tambahkan ini
+use Illuminate\Support\Facades\Auth;
 
-class Umkm extends Model
+class UmkmController extends Controller
 {
-    use HasFactory;
-    
-    protected $guarded = ['id'];
+    // ... method lain (seperti index/show jika ada) ...
 
-    // Relasi ke tabel Reviews
-    public function reviews()
+    public function processOrder(Request $request, $id)
     {
-        return $this->hasMany(Review::class);
-    }
+        $umkm = Umkm::findOrFail($id);
 
-    // Aksessor: Hitung Rata-rata Rating (Contoh: 4.5)
-    public function getRataRataRatingAttribute()
-    {
-        return round($this->reviews()->avg('rating'), 1);
-    }
-
-    // Aksessor: Cek Status Buka/Tutup (Logika Kuat)
-    public function getStatusBukaAttribute()
-    {
-        // 1. Bersihkan format jam (ubah titik jadi titik dua)
-        $jamRaw = str_replace('.', ':', $this->jam_operasional);
+        // 1. Ambil Nomor WA & Bersihkan Format
+        $noWa = $umkm->no_whatsapp;
         
-        // 2. Jika tidak ada tanda strip (-), anggap sebagai Info Teks
-        if (!str_contains($jamRaw, '-')) {
-            return 'Info'; 
+        // Hapus karakter selain angka
+        $noWa = preg_replace('/[^0-9]/', '', $noWa);
+
+        // Ubah 08xxx jadi 628xxx
+        if (substr($noWa, 0, 1) == '0') {
+            $noWa = '62' . substr($noWa, 1);
         }
 
-        try {
-            $parts = explode('-', $jamRaw);
-            $buka = Carbon::parse(trim($parts[0]));
-            $tutup = Carbon::parse(trim($parts[1]));
-            $sekarang = Carbon::now();
+        // 2. Susun Pesan
+        $namaUser = Auth::user()->name;
+        $pesanan = $request->pesanan;
+        $alamat = $request->alamat;
+        $isPickup = $request->input('is_pickup', false);
 
-            // Logika lintas hari (misal buka 18:00 tutup 02:00 pagi)
-            if ($tutup->lessThan($buka)) {
-                $tutup->addDay();
-                if ($sekarang->lessThan($buka)) {
-                    $sekarang->addDay();
-                }
-            }
+        $text = "Halo Kak, saya *$namaUser* ingin pesan di *$umkm->nama_umkm*.\n\n";
+        $text .= "*Detail Pesanan:*\n$pesanan\n\n";
 
-            // Cek apakah sekarang ada di antara jam buka dan tutup
-            if ($sekarang->between($buka, $tutup)) {
-                return 'Buka';
-            } else {
-                return 'Tutup';
-            }
-        } catch (\Exception $e) {
-            return 'Info'; // Jika error parsing, kembalikan 'Info'
+        if ($isPickup) {
+            $text .= "*Metode:* Ambil Sendiri (Pick Up)\n";
+        } else {
+            $text .= "*Alamat Pengantaran:*\n$alamat\n";
         }
+
+        $text .= "\nTerima kasih!";
+
+        // 3. Buat URL WhatsApp
+        $url = "https://wa.me/$noWa?text=" . urlencode($text);
+
+        // 4. Redirect ke WA
+        return redirect()->away($url);
     }
 
-    // Scope untuk Filter Delivery
-    public function scopeDelivery($query)
+    public function storeReview(Request $request, $id)
     {
-        return $query->where('is_delivery', true);
-    }
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'komentar' => 'nullable|string|max:500',
+        ]);
 
-    // Scope untuk Filter Kategori
-    public function scopeKategori($query, $tipe)
-    {
-        return $query->where('kategori', $tipe);
+        Review::create([
+            'user_id' => Auth::id(),
+            'umkm_id' => $id,
+            'rating' => $request->rating,
+            'komentar' => $request->komentar,
+        ]);
+
+        return back()->with('success', 'Terima kasih! Ulasan Anda berhasil dikirim.');
     }
 }
