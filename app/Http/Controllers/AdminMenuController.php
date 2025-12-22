@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Menu;
+use App\Models\Umkm;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class AdminMenuController extends Controller
+{
+    public function index($umkmId)
+    {
+        $umkm = Umkm::findOrFail($umkmId);
+        $menus = $umkm->menus()->latest()->get();
+        return view('admin.umkm.menus.index', compact('umkm', 'menus'));
+    }
+
+    public function store(Request $request, $umkmId)
+    {
+        $umkm = Umkm::findOrFail($umkmId);
+        
+        $request->merge(['harga' => str_replace('.', '', $request->harga)]);
+
+        $request->validate([
+            'nama_menu' => 'required|string|max:255',
+            'harga' => 'required|numeric|min:0',
+            'deskripsi' => 'nullable|string',
+            'gambar' => 'nullable|image|max:2048', 
+        ]);
+
+        $data = $request->only(['nama_menu', 'harga', 'deskripsi']);
+        $data['umkm_id'] = $umkm->id;
+
+        if ($request->hasFile('gambar')) {
+            $data['gambar'] = $request->file('gambar')->store('menus', 'public');
+        }
+
+        Menu::create($data);
+
+        return back()->with('success', 'Menu berhasil ditambahkan!');
+    }
+
+    public function update(Request $request, $umkmId, $menuId)
+    {
+        $menu = Menu::where('umkm_id', $umkmId)->findOrFail($menuId);
+
+        // Hapus titik jika user input pakai format ribuan
+        $request->merge(['harga' => str_replace('.', '', $request->harga)]);
+
+        $request->validate([
+            'nama_menu' => 'required|string|max:255',
+            'harga' => 'required|numeric|min:0',
+            'deskripsi' => 'nullable|string',
+            'gambar' => 'nullable|image|max:2048',
+        ]);
+
+        $data = $request->only(['nama_menu', 'harga', 'deskripsi']);
+
+        if ($request->hasFile('gambar')) {
+            if ($menu->gambar) {
+                Storage::disk('public')->delete($menu->gambar);
+            }
+            $data['gambar'] = $request->file('gambar')->store('menus', 'public');
+        }
+
+        $menu->update($data);
+
+        return back()->with('success', 'Menu berhasil diperbarui!');
+    }
+
+    public function destroy($umkmId, $menuId)
+    {
+        $menu = Menu::where('umkm_id', $umkmId)->findOrFail($menuId);
+        
+        if ($menu->gambar) {
+            Storage::disk('public')->delete($menu->gambar);
+        }
+        
+        $menu->delete();
+
+        return back()->with('success', 'Menu berhasil dihapus!');
+    }
+}

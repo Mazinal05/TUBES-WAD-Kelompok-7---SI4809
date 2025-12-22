@@ -127,7 +127,107 @@
         @empty
             <p class="text-muted">Belum ada ulasan untuk UMKM ini.</p>
         @endforelse
+        
+        <!-- DAFTAR MENU SECTION -->
+        <h4 class="mt-5 mb-3 fw-bold">Daftar Menu</h4>
+        <div class="row mb-5">
+            @forelse($umkm->menus as $menu)
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-2 d-flex gap-3 align-items-center">
+                        <!-- Menu Image -->
+                        <div style="width: 80px; height: 80px; flex-shrink: 0;">
+                            @if($menu->gambar)
+                                <img src="{{ asset('storage/'.$menu->gambar) }}" class="rounded w-100 h-100" style="object-fit: cover;">
+                            @else
+                                <div class="bg-light rounded w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                                    <i class="bi bi-cup-hot"></i>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        <!-- Menu Details -->
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-1">{{ $menu->nama_menu }}</h6>
+                            <small class="text-muted d-block lh-sm mb-1">{{ Str::limit($menu->deskripsi, 50) }}</small>
+                            <div class="fw-bold text-success">Rp {{ number_format($menu->harga, 0, ',', '.') }}</div>
+                        </div>
+
+                        <!-- Action -->
+                        <div>
+                            <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow btn-add-menu" 
+                                    style="width: 40px; height: 40px; transition: all 0.2s;"
+                                    data-name="{{ $menu->nama_menu }}"
+                                    data-price="{{ $menu->harga }}">
+                                <i class="bi bi-plus-lg" style="color: #ffffff; font-size: 1.5rem;"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="col-12 text-muted">Belum ada menu yang tersedia.</div>
+            @endforelse
+        </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let cart = {};
+            const textArea = document.querySelector('textarea[name="pesanan"]');
+            
+            // Function to generate text
+            function updateTextArea() {
+                let text = "Saya ingin pesan:\n";
+                let hasItems = false;
+                let total = 0;
+
+                for (let [name, item] of Object.entries(cart)) {
+                    if(item.qty > 0) {
+                        const subtotal = item.qty * item.price;
+                        text += `- ${item.qty}x ${name} (@ ${formatRupiah(item.price)})\n`;
+                        total += subtotal;
+                        hasItems = true;
+                    }
+                }
+
+                if(hasItems) {
+                    text += `\nTotal Estimasi: ${formatRupiah(total)}`;
+                    textArea.value = text;
+                }
+            }
+
+            // Helper Rupiah
+            function formatRupiah(num) {
+                return 'Rp ' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+
+            // Event Listeners
+            document.querySelectorAll('.btn-add-menu').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const name = this.dataset.name;
+                    const price = parseInt(this.dataset.price);
+
+                    if(!cart[name]) {
+                        cart[name] = { qty: 0, price: price };
+                    }
+                    cart[name].qty++;
+                    
+                    // Visual feedback
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = '<i class="bi bi-check-lg fs-5"></i>';
+                    this.classList.replace('btn-primary', 'btn-success');
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalContent;
+                        this.classList.replace('btn-success', 'btn-primary');
+                    }, 500);
+
+                    updateTextArea();
+                });
+            });
+        });
+    </script>
 
     <div class="col-md-4">
         
@@ -145,7 +245,7 @@
                         
                         <div class="mb-3">
                             <label class="form-label">Tulis Pesanan Anda</label>
-                            <textarea name="pesanan" class="form-control" rows="4" placeholder="Contoh: 1 Nasi Goreng Pedas, 2 Es Teh Manis" required></textarea>
+                            <textarea name="pesanan" class="form-control" rows="4" placeholder=": 1 Nasi Goreng Pedas, 2 Es Teh Manis" required></textarea>
                         </div>
 
                         @if($umkm->is_delivery)

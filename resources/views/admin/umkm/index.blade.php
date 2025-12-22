@@ -83,6 +83,9 @@
                                 </td>
                                 <td class="text-end pe-4">
                                     <div class="d-flex justify-content-end gap-2">
+                                        <a href="{{ route('admin.umkm.menus.index', $u->id) }}" class="btn btn-sm btn-outline-primary" title="Kelola Menu">
+                                            <i class="bi bi-list-task"></i> Menu
+                                        </a>
                                         <a href="{{ route('admin.umkms.edit', $u->id) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                             <i class="bi bi-pencil-fill"></i>
                                         </a>

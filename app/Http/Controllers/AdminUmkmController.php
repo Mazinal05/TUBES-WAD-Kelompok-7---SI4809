@@ -34,7 +34,7 @@ class AdminUmkmController extends Controller
         $daysOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
         
         foreach ($daysOrder as $day) {
-            if (isset($jadwal[$day]['buka'])) { // If checked as Open
+            if (isset($jadwal[$day]['buka'])) { 
                 $bukaDays[] = $day;
                 $start = $jadwal[$day]['start'] ?? '00:00';
                 $end = $jadwal[$day]['end'] ?? '00:00';

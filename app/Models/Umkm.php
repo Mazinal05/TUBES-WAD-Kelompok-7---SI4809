@@ -22,6 +22,11 @@ class Umkm extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
+    }
+
     // FITUR 2: Ambil Rata-rata Rating
     // Cara panggil: $umkm->rata_rata_rating
     public function getRataRataRatingAttribute()
@@ -30,30 +35,69 @@ class Umkm extends Model
     }
 
     // FITUR 1: Cek Status Buka/Tutup Otomatis
-    // Asumsi format jam di database harus konsisten: "08:00 - 22:00"
     // Cara panggil: $umkm->status_buka
     public function getStatusBukaAttribute()
     {
-        // Jika format jam tidak ada tanda strip "-", anggap info teks biasa
-        if (!str_contains($this->jam_operasional, '-')) {
-            return 'Info'; 
+        $jamOperasional = $this->jam_operasional;
+
+        if (!$jamOperasional || $jamOperasional == '-' || $jamOperasional == 'Tutup Sementara') {
+            return 'Tutup';
         }
 
         try {
-            // Pecah string "08:00 - 22:00"
-            $jam = explode('-', $this->jam_operasional);
-            $buka = Carbon::createFromFormat('H:i', trim($jam[0]));
-            $tutup = Carbon::createFromFormat('H:i', trim($jam[1]));
-            $sekarang = Carbon::now();
+            // Mapping hari Inggris ke Indonesia
+            $days = [
+                'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 
+                'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'
+            ];
+            $today = $days[Carbon::now()->format('l')];
+            $now = Carbon::now();
 
-            // Cek apakah sekarang berada di antara jam buka dan tutup
-            if ($sekarang->between($buka, $tutup)) {
-                return 'Buka';
-            } else {
-                return 'Tutup';
+            // 1. Cek format "Setiap Hari: 08:00 - 22:00"
+            if (str_contains($jamOperasional, 'Setiap Hari')) {
+                preg_match('/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/', $jamOperasional, $matches);
+                if (count($matches) == 3) {
+                    $buka = Carbon::createFromFormat('H:i', $matches[1]);
+                    $tutup = Carbon::createFromFormat('H:i', $matches[2]);
+                    return $now->between($buka, $tutup) ? 'Buka' : 'Tutup';
+                }
             }
+
+            // 2. Cek format per baris "Senin: 08:00 - 17:00"
+            // Pecah berdasarkan baris atau koma
+            $lines = preg_split("/\r\n|\n|\r/", $jamOperasional);
+            
+            foreach ($lines as $line) {
+                if (str_contains($line, $today)) {
+                    preg_match('/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/', $line, $matches);
+                    if (count($matches) == 3) {
+                        $buka = Carbon::createFromFormat('H:i', $matches[1]);
+                        $tutup = Carbon::createFromFormat('H:i', $matches[2]);
+                        
+                        // Handle lewat tengah malam (Closing next day) - Optional complexity
+                        // Untuk sekarang asumsi tutup di hari yang sama
+                        
+                        return $now->between($buka, $tutup) ? 'Buka' : 'Tutup'; 
+                    }
+                }
+            }
+            
+            // Jika hari ini tidak ditemukan di list, berarti Tutup
+            // (Kecuali jika formatnya string biasa tanpa hari, kita bisa asumsi default atau return Info)
+            if (!str_contains($jamOperasional, ':')) {
+                 // Format sederhana "08:00 - 22:00" tanpa nama hari
+                 preg_match('/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/', $jamOperasional, $matches);
+                 if (count($matches) == 3) {
+                    $buka = Carbon::createFromFormat('H:i', $matches[1]);
+                    $tutup = Carbon::createFromFormat('H:i', $matches[2]);
+                    return $now->between($buka, $tutup) ? 'Buka' : 'Tutup';
+                 }
+            }
+
+            return 'Tutup';
+
         } catch (\Exception $e) {
-            return 'Info'; // Jika format jam salah, kembalikan default
+            return 'Info'; 
         }
     }
     

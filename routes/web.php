@@ -3,6 +3,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UmkmController;
 use App\Http\Controllers\AdminUmkmController;
+use App\Http\Controllers\AdminMenuController;
 use App\Http\Controllers\AuthController;
 
 // 1. HALAMAN PUBLIK (Dashboard & Detail)
@@ -24,6 +25,14 @@ Route::middleware(['auth'])->group(function () {
 // 4. FITUR ADMIN (Harus Login & Role Admin)
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('umkms', AdminUmkmController::class);
+    
+    // Menu Management
+    Route::prefix('umkms/{umkm}/menus')->name('umkm.menus.')->group(function () {
+        Route::get('/', [AdminMenuController::class, 'index'])->name('index');
+        Route::post('/', [AdminMenuController::class, 'store'])->name('store');
+        Route::put('/{menu}', [AdminMenuController::class, 'update'])->name('update');
+        Route::delete('/{menu}', [AdminMenuController::class, 'destroy'])->name('destroy');
+    });
 });
 
 Route::middleware(['auth'])->group(function () {

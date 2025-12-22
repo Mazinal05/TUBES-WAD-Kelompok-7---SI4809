@@ -18,7 +18,7 @@ class HomeController extends Controller
     }
 
     public function show($id) {
-        $umkm = Umkm::findOrFail($id);
+        $umkm = Umkm::with(['menus', 'reviews.user'])->findOrFail($id);
         return view('umkm.detail', compact('umkm'));
     }
 }
