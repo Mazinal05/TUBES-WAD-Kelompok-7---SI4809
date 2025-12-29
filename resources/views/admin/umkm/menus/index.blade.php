@@ -31,6 +31,14 @@
                             <input type="text" name="harga" class="form-control" required>
                         </div>
                         <div class="mb-3">
+                            <label class="form-label">Kategori</label>
+                            <select name="kategori" class="form-select" required>
+                                <option value="Makanan Berat">Makanan Berat</option>
+                                <option value="Makanan Ringan">Makanan Ringan</option>
+                                <option value="Minuman">Minuman</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Deskripsi</label>
                             <textarea name="deskripsi" class="form-control" rows="2"></textarea>
                         </div>
@@ -113,6 +121,14 @@
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Harga (Rp)</label>
                                                                         <input type="text" name="harga" class="form-control" value="{{ $menu->harga }}" required>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label class="form-label">Kategori</label>
+                                                                        <select name="kategori" class="form-select" required>
+                                                                            <option value="Makanan Berat" {{ $menu->kategori == 'Makanan Berat' ? 'selected' : '' }}>Makanan Berat</option>
+                                                                            <option value="Makanan Ringan" {{ $menu->kategori == 'Makanan Ringan' ? 'selected' : '' }}>Makanan Ringan</option>
+                                                                            <option value="Minuman" {{ $menu->kategori == 'Minuman' ? 'selected' : '' }}>Minuman</option>
+                                                                        </select>
                                                                     </div>
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Deskripsi</label>

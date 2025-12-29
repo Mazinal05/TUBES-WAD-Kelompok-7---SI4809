@@ -26,10 +26,11 @@ class AdminMenuController extends Controller
             'nama_menu' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
+            'kategori' => 'required|string|in:Makanan Berat,Makanan Ringan,Minuman',
             'gambar' => 'nullable|image|max:2048', 
         ]);
 
-        $data = $request->only(['nama_menu', 'harga', 'deskripsi']);
+        $data = $request->only(['nama_menu', 'harga', 'deskripsi', 'kategori']);
         $data['umkm_id'] = $umkm->id;
 
         if ($request->hasFile('gambar')) {
@@ -52,10 +53,11 @@ class AdminMenuController extends Controller
             'nama_menu' => 'required|string|max:255',
             'harga' => 'required|numeric|min:0',
             'deskripsi' => 'nullable|string',
+            'kategori' => 'required|string|in:Makanan Berat,Makanan Ringan,Minuman',
             'gambar' => 'nullable|image|max:2048',
         ]);
 
-        $data = $request->only(['nama_menu', 'harga', 'deskripsi']);
+        $data = $request->only(['nama_menu', 'harga', 'deskripsi', 'kategori']);
 
         if ($request->hasFile('gambar')) {
             if ($menu->gambar) {

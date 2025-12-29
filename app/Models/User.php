@@ -46,4 +46,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function favorites()
+    {
+        return $this->belongsToMany(Umkm::class, 'favorites', 'user_id', 'umkm_id')->withTimestamps();
+    }
 }

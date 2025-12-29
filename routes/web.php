@@ -5,6 +5,7 @@ use App\Http\Controllers\UmkmController;
 use App\Http\Controllers\AdminUmkmController;
 use App\Http\Controllers\AdminMenuController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FavoriteController;
 
 // 1. HALAMAN PUBLIK (Dashboard & Detail)
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -19,7 +20,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // 3. FITUR USER (Harus Login)
 Route::middleware(['auth'])->group(function () {
+    Route::post('/umkm/{id}/checkout', [UmkmController::class, 'showCheckout'])->name('umkm.checkout');
     Route::post('/umkm/{id}/order', [UmkmController::class, 'processOrder'])->name('umkm.order');
+    Route::post('/umkm/{id}/favorite', [FavoriteController::class, 'toggle'])->name('umkm.favorite');
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
 });
 
 // 4. FITUR ADMIN (Harus Login & Role Admin)

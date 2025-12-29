@@ -50,15 +50,21 @@ class Umkm extends Model
                 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 
                 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'
             ];
-            $today = $days[Carbon::now()->format('l')];
-            $now = Carbon::now();
+            
+            // GUNAKAN TIMEZONE ASIA/JAKARTA (WIB)
+            $now = Carbon::now('Asia/Jakarta');
+            $today = $days[$now->format('l')];
 
             // 1. Cek format "Setiap Hari: 08:00 - 22:00"
             if (str_contains($jamOperasional, 'Setiap Hari')) {
                 preg_match('/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/', $jamOperasional, $matches);
                 if (count($matches) == 3) {
-                    $buka = Carbon::createFromFormat('H:i', $matches[1]);
-                    $tutup = Carbon::createFromFormat('H:i', $matches[2]);
+                    $buka = Carbon::createFromFormat('H:i', $matches[1], 'Asia/Jakarta');
+                    $buka->setDate($now->year, $now->month, $now->day);
+                    
+                    $tutup = Carbon::createFromFormat('H:i', $matches[2], 'Asia/Jakarta');
+                    $tutup->setDate($now->year, $now->month, $now->day);
+
                     return $now->between($buka, $tutup) ? 'Buka' : 'Tutup';
                 }
             }
@@ -71,27 +77,37 @@ class Umkm extends Model
                 if (str_contains($line, $today)) {
                     preg_match('/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/', $line, $matches);
                     if (count($matches) == 3) {
-                        $buka = Carbon::createFromFormat('H:i', $matches[1]);
-                        $tutup = Carbon::createFromFormat('H:i', $matches[2]);
-                        
-                        // Handle lewat tengah malam (Closing next day) - Optional complexity
-                        // Untuk sekarang asumsi tutup di hari yang sama
+                        $buka = Carbon::createFromFormat('H:i', $matches[1], 'Asia/Jakarta');
+                        $buka->setDate($now->year, $now->month, $now->day);
+
+                        $tutup = Carbon::createFromFormat('H:i', $matches[2], 'Asia/Jakarta');
+                        $tutup->setDate($now->year, $now->month, $now->day);
                         
                         return $now->between($buka, $tutup) ? 'Buka' : 'Tutup'; 
                     }
                 }
             }
             
-            // Jika hari ini tidak ditemukan di list, berarti Tutup
-            // (Kecuali jika formatnya string biasa tanpa hari, kita bisa asumsi default atau return Info)
-            if (!str_contains($jamOperasional, ':')) {
-                 // Format sederhana "08:00 - 22:00" tanpa nama hari
-                 preg_match('/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/', $jamOperasional, $matches);
-                 if (count($matches) == 3) {
-                    $buka = Carbon::createFromFormat('H:i', $matches[1]);
-                    $tutup = Carbon::createFromFormat('H:i', $matches[2]);
+            // 3. Fallback: Jika string hanya berisi jam "08:00 - 22:00" tanpa hari
+            $hasDayName = false;
+            foreach($days as $day) {
+                if(str_contains($jamOperasional, $day)) {
+                    $hasDayName = true;
+                    break;
+                }
+            }
+
+            if (!$hasDayName) {
+                preg_match('/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/', $jamOperasional, $matches);
+                if (count($matches) == 3) {
+                    $buka = Carbon::createFromFormat('H:i', $matches[1], 'Asia/Jakarta');
+                    $buka->setDate($now->year, $now->month, $now->day);
+                    
+                    $tutup = Carbon::createFromFormat('H:i', $matches[2], 'Asia/Jakarta');
+                    $tutup->setDate($now->year, $now->month, $now->day);
+
                     return $now->between($buka, $tutup) ? 'Buka' : 'Tutup';
-                 }
+                }
             }
 
             return 'Tutup';
@@ -109,5 +125,9 @@ class Umkm extends Model
     public function scopeDelivery($query)
     {
         return $query->where('is_delivery', true);
+    }
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'umkm_id', 'user_id')->withTimestamps();
     }
 }

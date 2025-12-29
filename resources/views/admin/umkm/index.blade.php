@@ -62,7 +62,12 @@
                                         @endif
                                         <div>
                                             <h6 class="mb-0 fw-bold text-dark">{{ $u->nama_umkm }}</h6>
-                                            <small class="text-muted">{{ Str::limit($u->deskripsi, 40) }}</small>
+                                            <small class="text-muted d-block mb-1">{{ Str::limit($u->deskripsi, 40) }}</small>
+                                            @if($u->status_buka == 'Buka')
+                                                <span class="badge bg-success" style="font-size: 0.65rem;">BUKA</span>
+                                            @else
+                                                <span class="badge bg-danger" style="font-size: 0.65rem;">TUTUP</span>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>

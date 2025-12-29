@@ -11,6 +11,21 @@ class UmkmController extends Controller
 {
     // ... method lain (seperti index/show jika ada) ...
 
+    // ... method lain (seperti index/show jika ada) ...
+
+    public function showCheckout(Request $request, $id)
+    {
+        $umkm = Umkm::findOrFail($id);
+        $cartData = json_decode($request->cart_json, true) ?? [];
+        
+        // Redirect back if cart is empty
+        if(empty($cartData)) {
+            return back()->with('error', 'Keranjang Anda kosong.');
+        }
+
+        return view('umkm.checkout', compact('umkm', 'cartData'));
+    }
+
     public function processOrder(Request $request, $id)
     {
         $umkm = Umkm::findOrFail($id);
@@ -56,6 +71,15 @@ class UmkmController extends Controller
             'rating' => 'required|integer|min:1|max:5',
             'komentar' => 'nullable|string|max:500',
         ]);
+
+        // Cek apakah user sudah pernah review
+        $existingReview = Review::where('user_id', Auth::id())
+            ->where('umkm_id', $id)
+            ->first();
+
+        if ($existingReview) {
+            return back()->with('error', 'Anda sudah memberikan ulasan untuk UMKM ini.');
+        }
 
         Review::create([
             'user_id' => Auth::id(),
