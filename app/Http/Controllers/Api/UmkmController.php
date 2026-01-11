@@ -10,12 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class UmkmController extends Controller
 {
-    /**
-     * GET /api/umkms
-     * Menampilkan daftar semua UMKM
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
+    //menampilkan semua umkm
     public function index()
     {
         $umkms = Umkm::with('menus')->get();
@@ -47,16 +42,10 @@ class UmkmController extends Controller
         ], 200);
     }
 
-    /**
-     * POST /api/umkms
-     * Menambahkan UMKM baru
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    //menambahkan umkm baru
     public function store(Request $request)
     {
-        // Validasi input
+        //validasi
         $validator = Validator::make($request->all(), [
             'nama_umkm' => 'required|string|max:255',
             'kategori' => 'required|array',
@@ -88,13 +77,13 @@ class UmkmController extends Controller
             ], 422);
         }
 
-        // Proses upload gambar jika ada
+        //upload gambar
         $gambarPath = null;
         if ($request->hasFile('gambar')) {
             $gambarPath = $request->file('gambar')->store('umkm', 'public');
         }
 
-        // Buat UMKM baru
+        //simpan ke database
         $umkm = Umkm::create([
             'nama_umkm' => $request->nama_umkm,
             'kategori' => $request->kategori,
@@ -127,16 +116,10 @@ class UmkmController extends Controller
         ], 201);
     }
 
-    /**
-     * DELETE /api/umkms/{id}
-     * Menghapus UMKM berdasarkan ID
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
+    //menghapus umkm
     public function destroy($id)
     {
-        // Cari UMKM berdasarkan ID
+        //cari umkm
         $umkm = Umkm::find($id);
 
         if (!$umkm) {
@@ -146,15 +129,14 @@ class UmkmController extends Controller
             ], 404);
         }
 
-        // Simpan nama untuk response
         $namaUmkm = $umkm->nama_umkm;
 
-        // Hapus gambar jika ada
+        //hapus gambar
         if ($umkm->gambar && Storage::disk('public')->exists($umkm->gambar)) {
             Storage::disk('public')->delete($umkm->gambar);
         }
 
-        // Hapus UMKM (menu terkait akan dihapus jika ada cascade)
+        //hapus data
         $umkm->delete();
 
         return response()->json([

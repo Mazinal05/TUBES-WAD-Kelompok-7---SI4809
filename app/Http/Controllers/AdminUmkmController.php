@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminUmkmController extends Controller
 {
+    //menampilkan daftar umkm
     public function index(Request $request) {
         $query = Umkm::latest();
         if ($request->search) {
@@ -16,17 +17,17 @@ class AdminUmkmController extends Controller
         return view('admin.umkm.index', compact('umkms'));
     }
 
+    //form tambah umkm
     public function create() { return view('admin.umkm.create'); }
 
+    //simpan umkm baru
     public function store(Request $request) {
         $data = $request->validate([
             'nama_umkm' => 'required', 'deskripsi' => 'required',
             'no_whatsapp' => 'required', 'kategori' => 'required|array',
             'gambar' => 'image', 'alamat' => 'required', 'koordinat' => 'nullable',
-            // removed separate hari/jam validation, will handle manually
         ]);
 
-        // Process Schedule
         $jadwal = $request->input('jadwal', []);
         $bukaDays = [];
         $jamStrings = [];
@@ -45,7 +46,6 @@ class AdminUmkmController extends Controller
         $data['hari_operasional'] = implode(', ', $bukaDays);
         if (empty($data['hari_operasional'])) $data['hari_operasional'] = 'Tutup Sementara';
 
-        // Check if all times are the same to simplify
         $uniqueTimes = [];
         foreach ($daysOrder as $day) {
             if (isset($jadwal[$day]['buka'])) {
@@ -75,16 +75,17 @@ class AdminUmkmController extends Controller
         return redirect()->route('admin.umkms.index');
     }
 
+    //form edit umkm
     public function edit($id) {
         $umkm = Umkm::findOrFail($id);
         return view('admin.umkm.edit', compact('umkm'));
     }
 
+    //update data umkm
     public function update(Request $request, $id) {
         $umkm = Umkm::findOrFail($id);
         $data = $request->except(['jadwal', 'gambar', 'is_delivery']); // Handle special fields manually
 
-        // Process Schedule (Same logic as store)
         $jadwal = $request->input('jadwal', []);
         $bukaDays = [];
         $jamStrings = [];
@@ -132,6 +133,7 @@ class AdminUmkmController extends Controller
         return redirect()->route('admin.umkms.index');
     }
 
+    //hapus umkm
     public function destroy($id) {
         Umkm::destroy($id);
         return back();

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminMenuController extends Controller
 {
+    //menampilkan menu
     public function index($umkmId)
     {
         $umkm = Umkm::findOrFail($umkmId);
@@ -16,6 +17,7 @@ class AdminMenuController extends Controller
         return view('admin.umkm.menus.index', compact('umkm', 'menus'));
     }
 
+    //menambah menu baru
     public function store(Request $request, $umkmId)
     {
         $umkm = Umkm::findOrFail($umkmId);
@@ -42,11 +44,11 @@ class AdminMenuController extends Controller
         return back()->with('success', 'Menu berhasil ditambahkan!');
     }
 
+    //update menu
     public function update(Request $request, $umkmId, $menuId)
     {
         $menu = Menu::where('umkm_id', $umkmId)->findOrFail($menuId);
 
-        // Hapus titik jika user input pakai format ribuan
         $request->merge(['harga' => str_replace('.', '', $request->harga)]);
 
         $request->validate([
@@ -71,6 +73,7 @@ class AdminMenuController extends Controller
         return back()->with('success', 'Menu berhasil diperbarui!');
     }
 
+    //hapus menu
     public function destroy($umkmId, $menuId)
     {
         $menu = Menu::where('umkm_id', $umkmId)->findOrFail($menuId);
