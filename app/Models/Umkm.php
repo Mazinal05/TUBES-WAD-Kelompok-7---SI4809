@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon; // Pastikan import ini ada
+use Carbon\Carbon; 
 
 class Umkm extends Model
 {
@@ -16,7 +16,6 @@ class Umkm extends Model
     'is_delivery' => 'boolean',
 ];
 
-    // Relasi ke Review
     public function reviews()
     {
         return $this->hasMany(Review::class);
@@ -27,15 +26,13 @@ class Umkm extends Model
         return $this->hasMany(Menu::class);
     }
 
-    // FITUR 2: Ambil Rata-rata Rating
-    // Cara panggil: $umkm->rata_rata_rating
+    //Ambil Rata-rata Rating
     public function getRataRataRatingAttribute()
     {
         return round($this->reviews()->avg('rating'), 1);
     }
 
-    // FITUR 1: Cek Status Buka/Tutup Otomatis
-    // Cara panggil: $umkm->status_buka
+    // Cek Status Buka/Tutup Otomatis
     public function getStatusBukaAttribute()
     {
         $jamOperasional = $this->jam_operasional;
@@ -45,13 +42,11 @@ class Umkm extends Model
         }
 
         try {
-            // Mapping hari Inggris ke Indonesia
             $days = [
                 'Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 
                 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'
             ];
             
-            // GUNAKAN TIMEZONE ASIA/JAKARTA (WIB)
             $now = Carbon::now('Asia/Jakarta');
             $today = $days[$now->format('l')];
 
@@ -69,8 +64,6 @@ class Umkm extends Model
                 }
             }
 
-            // 2. Cek format per baris "Senin: 08:00 - 17:00"
-            // Pecah berdasarkan baris atau koma
             $lines = preg_split("/\r\n|\n|\r/", $jamOperasional);
             
             foreach ($lines as $line) {
@@ -88,7 +81,6 @@ class Umkm extends Model
                 }
             }
             
-            // 3. Fallback: Jika string hanya berisi jam "08:00 - 22:00" tanpa hari
             $hasDayName = false;
             foreach($days as $day) {
                 if(str_contains($jamOperasional, $day)) {

@@ -4,21 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Umkm;
-use App\Models\Review; // Tambahkan ini
+use App\Models\Review;
 use Illuminate\Support\Facades\Auth;
 
 class UmkmController extends Controller
 {
-    // ... method lain (seperti index/show jika ada) ...
 
-    // ... method lain (seperti index/show jika ada) ...
-
+    //halaman checkout
     public function showCheckout(Request $request, $id)
     {
         $umkm = Umkm::findOrFail($id);
         $cartData = json_decode($request->cart_json, true) ?? [];
         
-        // Redirect back if cart is empty
         if(empty($cartData)) {
             return back()->with('error', 'Keranjang Anda kosong.');
         }
@@ -26,22 +23,20 @@ class UmkmController extends Controller
         return view('umkm.checkout', compact('umkm', 'cartData'));
     }
 
+    //proses order ke whatsapp
     public function processOrder(Request $request, $id)
     {
         $umkm = Umkm::findOrFail($id);
 
-        // 1. Ambil Nomor WA & Bersihkan Format
         $noWa = $umkm->no_whatsapp;
-        
-        // Hapus karakter selain angka
+
         $noWa = preg_replace('/[^0-9]/', '', $noWa);
 
-        // Ubah 08xxx jadi 628xxx
         if (substr($noWa, 0, 1) == '0') {
             $noWa = '62' . substr($noWa, 1);
         }
 
-        // 2. Susun Pesan
+
         $namaUser = Auth::user()->name;
         $pesanan = $request->pesanan;
         $alamat = $request->alamat;
@@ -58,13 +53,13 @@ class UmkmController extends Controller
 
         $text .= "\nTerima kasih!";
 
-        // 3. Buat URL WhatsApp
         $url = "https://wa.me/$noWa?text=" . urlencode($text);
 
-        // 4. Redirect ke WA
+
         return redirect()->away($url);
     }
 
+    //simpan review
     public function storeReview(Request $request, $id)
     {
         $request->validate([
@@ -72,7 +67,6 @@ class UmkmController extends Controller
             'komentar' => 'nullable|string|max:500',
         ]);
 
-        // Cek apakah user sudah pernah review
         $existingReview = Review::where('user_id', Auth::id())
             ->where('umkm_id', $id)
             ->first();

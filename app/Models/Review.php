@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Review extends Model
 {
     use HasFactory;
-
-    // TAMBAHKAN INI (Agar kolom ini diizinkan untuk diisi data)
     protected $fillable = [
         'user_id',
         'umkm_id',
