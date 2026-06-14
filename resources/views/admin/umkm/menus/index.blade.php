@@ -11,6 +11,17 @@
     <div class="row">
         <div class="col-md-12">
             <h3 class="fw-bold mb-4">Kelola Menu: {{ $umkm->nama_umkm }}</h3>
+            
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                    <ul class="mb-0 small">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
         </div>
 
         <!-- Form Tambah Menu -->
@@ -24,27 +35,42 @@
                         @csrf
                         <div class="mb-3">
                             <label class="form-label">Nama Menu</label>
-                            <input type="text" name="nama_menu" class="form-control" required>
+                            <input type="text" name="nama_menu" class="form-control @error('nama_menu') is-invalid @enderror" value="{{ old('nama_menu') }}" required>
+                            @error('nama_menu')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Harga (Rp)</label>
-                            <input type="text" name="harga" class="form-control" required>
+                            <input type="text" name="harga" class="form-control @error('harga') is-invalid @enderror" value="{{ old('harga') }}" required>
+                            @error('harga')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Kategori</label>
-                            <select name="kategori" class="form-select" required>
-                                <option value="Makanan Berat">Makanan Berat</option>
-                                <option value="Makanan Ringan">Makanan Ringan</option>
-                                <option value="Minuman">Minuman</option>
+                            <select name="kategori" class="form-select @error('kategori') is-invalid @enderror" required>
+                                <option value="Makanan Berat" {{ old('kategori') == 'Makanan Berat' ? 'selected' : '' }}>Makanan Berat</option>
+                                <option value="Makanan Ringan" {{ old('kategori') == 'Makanan Ringan' ? 'selected' : '' }}>Makanan Ringan</option>
+                                <option value="Minuman" {{ old('kategori') == 'Minuman' ? 'selected' : '' }}>Minuman</option>
                             </select>
+                            @error('kategori')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" rows="2"></textarea>
+                            <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" rows="2">{{ old('deskripsi') }}</textarea>
+                            @error('deskripsi')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Gambar</label>
-                            <input type="file" name="gambar" class="form-control">
+                            <input type="file" name="gambar" class="form-control @error('gambar') is-invalid @enderror" accept="image/*">
+                            @error('gambar')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
                         <button type="submit" class="btn btn-primary w-100">Simpan Menu</button>
                     </form>
@@ -116,27 +142,42 @@
                                                                     @method('PUT')
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Nama Menu</label>
-                                                                        <input type="text" name="nama_menu" class="form-control" value="{{ $menu->nama_menu }}" required>
+                                                                        <input type="text" name="nama_menu" class="form-control @error('nama_menu') is-invalid @enderror" value="{{ old('nama_menu', $menu->nama_menu) }}" required>
+                                                                        @error('nama_menu')
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
                                                                     </div>
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Harga (Rp)</label>
-                                                                        <input type="text" name="harga" class="form-control" value="{{ $menu->harga }}" required>
+                                                                        <input type="text" name="harga" class="form-control @error('harga') is-invalid @enderror" value="{{ old('harga', $menu->harga) }}" required>
+                                                                        @error('harga')
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
                                                                     </div>
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Kategori</label>
-                                                                        <select name="kategori" class="form-select" required>
-                                                                            <option value="Makanan Berat" {{ $menu->kategori == 'Makanan Berat' ? 'selected' : '' }}>Makanan Berat</option>
-                                                                            <option value="Makanan Ringan" {{ $menu->kategori == 'Makanan Ringan' ? 'selected' : '' }}>Makanan Ringan</option>
-                                                                            <option value="Minuman" {{ $menu->kategori == 'Minuman' ? 'selected' : '' }}>Minuman</option>
+                                                                        <select name="kategori" class="form-select @error('kategori') is-invalid @enderror" required>
+                                                                            <option value="Makanan Berat" {{ old('kategori', $menu->kategori) == 'Makanan Berat' ? 'selected' : '' }}>Makanan Berat</option>
+                                                                            <option value="Makanan Ringan" {{ old('kategori', $menu->kategori) == 'Makanan Ringan' ? 'selected' : '' }}>Makanan Ringan</option>
+                                                                            <option value="Minuman" {{ old('kategori', $menu->kategori) == 'Minuman' ? 'selected' : '' }}>Minuman</option>
                                                                         </select>
+                                                                        @error('kategori')
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
                                                                     </div>
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Deskripsi</label>
-                                                                        <textarea name="deskripsi" class="form-control" rows="2">{{ $menu->deskripsi }}</textarea>
+                                                                        <textarea name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" rows="2">{{ old('deskripsi', $menu->deskripsi) }}</textarea>
+                                                                        @error('deskripsi')
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
                                                                     </div>
                                                                     <div class="mb-3">
                                                                         <label class="form-label">Ganti Gambar (Opsional)</label>
-                                                                        <input type="file" name="gambar" class="form-control">
+                                                                        <input type="file" name="gambar" class="form-control @error('gambar') is-invalid @enderror" accept="image/*">
+                                                                        @error('gambar')
+                                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                                        @enderror
                                                                     </div>
                                                                     <div class="d-flex justify-content-end">
                                                                         <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button>
@@ -164,5 +205,82 @@
             </div>
         </div>
     </div>
-</div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('form');
+        
+        forms.forEach(form => {
+            if (form.method.toLowerCase() !== 'post') return;
+            
+            const hargaInput = form.querySelector('input[name="harga"]');
+            const gambarInput = form.querySelector('input[name="gambar"]');
+
+            if (hargaInput) {
+                hargaInput.addEventListener('input', function () {
+                    hargaInput.classList.remove('is-invalid');
+                });
+            }
+            if (gambarInput) {
+                gambarInput.addEventListener('change', function () {
+                    gambarInput.classList.remove('is-invalid');
+                });
+            }
+            
+            form.addEventListener('submit', function (event) {
+                let isValid = true;
+                
+                // 1. Validate harga
+                if (hargaInput) {
+                    const rawValue = hargaInput.value.trim().replace(/\./g, '');
+                    
+                    hargaInput.classList.remove('is-invalid');
+                    const feedback = hargaInput.parentNode.querySelector('.invalid-feedback');
+                    if (feedback) feedback.innerText = '';
+                    
+                    if (rawValue === '') {
+                        showError(hargaInput, 'Harga makanan harus diisi.');
+                        isValid = false;
+                    } else if (isNaN(rawValue)) {
+                        showError(hargaInput, 'Harga harus berupa angka.');
+                        isValid = false;
+                    } else if (parseFloat(rawValue) < 0) {
+                        showError(hargaInput, 'Harga tidak boleh negatif.');
+                        isValid = false;
+                    }
+                }
+                
+                // 2. Validate gambar
+                if (gambarInput && gambarInput.files && gambarInput.files.length > 0) {
+                    const file = gambarInput.files[0];
+                    const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.svg|\.webp)$/i;
+                    
+                    gambarInput.classList.remove('is-invalid');
+                    const feedback = gambarInput.parentNode.querySelector('.invalid-feedback');
+                    if (feedback) feedback.innerText = '';
+                    
+                    if (!allowedExtensions.exec(file.name)) {
+                        showError(gambarInput, 'Format file tidak didukung');
+                        isValid = false;
+                    }
+                }
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        });
+        
+        function showError(input, message) {
+            input.classList.add('is-invalid');
+            let feedback = input.parentNode.querySelector('.invalid-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                input.parentNode.appendChild(feedback);
+            }
+            feedback.innerText = message;
+        }
+    });
+    </script>
 @endsection
